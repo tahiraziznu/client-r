@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout team-repo code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false   # ✅ prevents GitHub Actions bot override
 
       - name: Push to client-repo
         env:
@@ -25,7 +27,7 @@ jobs:
           git config user.name "Tahir Aziz"
           git config user.email "tahiraziznu@gmail.com"
 
-          echo "Token starts with: ${CLIENTPAT:0:4}****"  # ✅ Bash syntax (correct)
+          echo "Token starts with: ${CLIENTPAT:0:4}****"
 
           git remote add client https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git
           git push client HEAD:main --force
