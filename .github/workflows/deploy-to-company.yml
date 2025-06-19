@@ -1,32 +1,31 @@
-name: Manual Deploy to Client Repo
+name: Deploy to Client Repository
 
-on: workflow_dispatch
-permissions:
-  contents: write
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "DEPLOY" to confirm deployment to client repo'
+        required: true
+        default: ''
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    if: github.event.inputs.confirm == 'DEPLOY'
+    
     steps:
-      - name: Checkout main branch
+      - name: Checkout company repo
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: 'main'
+          fetch-depth: 0
 
-      - name: Set Git identity
+      - name: Configure Git
         run: |
           git config --global user.name "Tahir Aziz"
           git config --global user.email "tahiraziznu@gmail.com"
 
-      - name: Add and verify client remote
-        env:
-          TOKEN: ${{ secrets.CLIENT_TOKEN }}
+      - name: Push to client repository
         run: |
-          echo "🔐 Token length: ${#TOKEN}"
-          git remote add client https://x-access-token:${TOKEN}@github.com/tahiraziznu/client-r.git
-          git remote -v
-
-      - name: Push to client repo
-        run: |
-          git push client main --force
+          git remote add client https://${{ secrets.CLIENT_TOKEN }}@github.com/tahiraziznu/client-r.git
+          git push client dev:main --force
