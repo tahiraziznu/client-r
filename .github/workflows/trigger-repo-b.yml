@@ -18,7 +18,8 @@ jobs:
       - name: Checkout team-repo code
         uses: actions/checkout@v3
         with:
-          persist-credentials: false   # ✅ prevents GitHub Actions bot override
+          persist-credentials: false       # prevent GitHub bot credentials
+          fetch-depth: 1                   # ✅ shallow clone to reduce push size
 
       - name: Push to client-repo
         env:
