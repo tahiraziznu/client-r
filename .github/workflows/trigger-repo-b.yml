@@ -12,6 +12,7 @@ on:
       - 'package.json'
       - 'tsconfig.json'
       - 'next.config.js'
+      
   pull_request:
     branches:
       - main
