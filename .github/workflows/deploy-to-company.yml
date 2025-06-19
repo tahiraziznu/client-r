@@ -24,7 +24,7 @@ jobs:
           TOKEN: ${{ secrets.CLIENT_TOKEN }}
         run: |
           echo "🔐 Token length: ${#TOKEN}"
-          git remote add client https://x-access-token:${TOKEN}@github.com/tahiraziznu/client-repo.git
+          git remote add client https://x-access-token:${TOKEN}@github.com/tahiraziznu/client-r.git
           git remote -v
 
       - name: Push to client repo
