@@ -19,9 +19,13 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Push to client-repo
+        env:
+          CLIENTPAT: ${{ secrets.CLIENTPAT }}
         run: |
           git config user.name "Tahir Aziz"
           git config user.email "tahiraziznu@gmail.com"
-          git remote add client https://x-access-token:${{ secrets.CLIENTPAT }}@github.com/tahiraziznu/client-r.git
-          echo "Remote: https://x-access-token:${ secrets.CLIENTPAT:0:4 }****@github.com/tahiraziznu/client-r.git"
+
+          echo "Token starts with: ${CLIENTPAT:0:4}****"  # ✅ Bash syntax (correct)
+
+          git remote add client https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git
           git push client HEAD:main --force
