@@ -1,34 +1,41 @@
-name: Sync to Client Repo
+name: Auto Sync to Client Repo
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-    types: [closed]
 
 jobs:
-  sync-code:
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
+  sync-client-repo:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout team-repo code
         uses: actions/checkout@v3
         with:
-          persist-credentials: false       # prevent GitHub bot credentials
-          fetch-depth: 1                   # ✅ shallow clone to reduce push size
+          persist-credentials: false
+          fetch-depth: 1
 
-      - name: Push to client-repo
+      - name: Clone client-repo and sync files
         env:
           CLIENTPAT: ${{ secrets.CLIENTPAT }}
         run: |
-          git config user.name "Tahir Aziz"
-          git config user.email "tahiraziznu@gmail.com"
-
           echo "Token starts with: ${CLIENTPAT:0:4}****"
 
-          git remote add client https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git
-          git push client HEAD:main --force
+          # Clone the client-repo into a subfolder
+          git clone https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git client-repo
+          
+          # Remove all files in client-repo
+          rm -rf client-repo/*
+          
+          # Copy all files from team-repo into client-repo (excluding .git and the client-repo folder)
+          rsync -av --progress ./ ./client-repo --exclude .git --exclude client-repo
+          
+          cd client-repo
+
+          git config user.name "Tahir Aziz"
+          git config user.email "tahiraziznu@gmail.com"
+          
+          git add .
+          git commit -m "Auto-sync from team-repo $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+          git push origin main
