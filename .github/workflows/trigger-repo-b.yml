@@ -22,20 +22,25 @@ jobs:
         run: |
           echo "Token starts with: ${CLIENTPAT:0:4}****"
 
-          # Clone the client-repo into a subfolder
+          # Clone client-repo to a subfolder
           git clone https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git client-repo
           
-          # Remove all files in client-repo
+          # Remove all files from client-repo
           rm -rf client-repo/*
-          
-          # Copy all files from team-repo into client-repo (excluding .git and the client-repo folder)
-          rsync -av --progress ./ ./client-repo --exclude .git --exclude client-repo
-          
-          cd client-repo
 
+          # Sync files from team-repo to client-repo (excluding .git and client-repo folder)
+          rsync -av --progress ./ ./client-repo --exclude .git --exclude client-repo
+
+          cd client-repo
           git config user.name "Tahir Aziz"
           git config user.email "tahiraziznu@gmail.com"
-          
+
           git add .
-          git commit -m "Auto-sync from team-repo $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+
+          # Grab the original commit message from team-repo
+          commit_msg=$(git -C .. log -1 --pretty=%B)
+
+          # Use it in client-repo
+          git commit -m "$commit_msg" || echo "No changes to commit"
+
           git push origin main
