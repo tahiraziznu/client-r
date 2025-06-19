@@ -22,5 +22,5 @@ jobs:
         run: |
           git config user.name "Tahir Aziz"
           git config user.email "tahiraziznu@gmail.com"
-          git remote add client https://x-access-token:${{ secrets.CLIENT_TOKEN }}@github.com/tahiraziznu/client-r
+          git remote add client https://x-access-token:${{ secrets.CLIENT_TOKEN }}@github.com/tahiraziznu/client-r.git
           git push client HEAD:main --force
