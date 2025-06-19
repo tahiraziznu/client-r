@@ -28,4 +28,4 @@ jobs:
       - name: Push to client repository
         run: |
           git remote add client https://${{ secrets.CLIENT_TOKEN }}@github.com/tahiraziznu/client-r.git
-          git push client dev:main --force
+          git push client main --force
