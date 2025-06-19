@@ -4,9 +4,22 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'components/**'
+      - 'utils/**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'next.config.js'
+  pull_request:
+    branches:
+      - main
+    types: [closed]
 
 jobs:
   sync-client-repo:
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -20,27 +33,26 @@ jobs:
         env:
           CLIENTPAT: ${{ secrets.CLIENTPAT }}
         run: |
-          echo "Token starts with: ${CLIENTPAT:0:4}****"
+          echo "🔐 Token starts with: ${CLIENTPAT:0:4}****"
 
           # Clone client-repo to a subfolder
           git clone https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git client-repo
           
-          # Remove all files from client-repo
+          # Remove all existing files in client-repo
           rm -rf client-repo/*
 
-          # Sync files from team-repo to client-repo (excluding .git and client-repo folder)
+          # Copy everything from team-repo (excluding .git and client-repo folder)
           rsync -av --progress ./ ./client-repo --exclude .git --exclude client-repo
 
           cd client-repo
+
           git config user.name "Tahir Aziz"
           git config user.email "tahiraziznu@gmail.com"
 
           git add .
 
-          # Grab the original commit message from team-repo
+          # Use latest commit message from team-repo
           commit_msg=$(git -C .. log -1 --pretty=%B)
-
-          # Use it in client-repo
-          git commit -m "$commit_msg" || echo "No changes to commit"
+          git commit -m "$commit_msg" || echo "⚠️ No changes to commit"
 
           git push origin main
