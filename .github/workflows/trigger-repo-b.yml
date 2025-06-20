@@ -14,38 +14,38 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
 
     steps:
-      - name: Checkout Team Repo
+      - name: Checkout Team Repo (team-r)
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # important for full history and merge base
+          fetch-depth: 0  # required for git merge to work properly
 
       - name: Setup Git Identity
         run: |
           git config --global user.name "Tahir Aziz"
           git config --global user.email "tahiraziznu@gmail.com"
 
-      - name: Clone Client Repo and Merge Team Code
+      - name: Clone client-r repo and merge team-r code
         env:
           CLIENTPAT: ${{ secrets.CLIENTPAT }}
         run: |
-          echo "🔐 Cloning client repo..."
+          echo "🔐 Cloning client-r repository..."
           git clone https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git client-repo
           cd client-repo
 
-          echo "🔁 Adding team repo as remote..."
-          git remote add team-repo $GITHUB_SERVER_URL/${{ github.repository }}
+          echo "🔁 Adding team-r as a remote..."
+          git remote add team-repo https://github.com/tahiraziznu/team-r.git
           git fetch team-repo
 
-          echo "🔀 Merging team repo code into client repo..."
+          echo "🔀 Merging team-r/main into client-r/main..."
           git checkout main
           git merge team-repo/main --no-edit || echo "⚠️ Merge completed with conflicts — please resolve manually."
 
-          echo "🧪 Checking for conflicts..."
+          echo "🧪 Checking for merge conflicts..."
           if git ls-files -u | grep -q .; then
             echo "❌ Merge conflict detected. Please resolve manually in the client repo."
             exit 1
           fi
 
-          echo "✅ Pushing merged code to client repo..."
+          echo "✅ Committing and pushing to client-r..."
           git commit -am "${{ github.event.inputs.commitMessage }}" || echo "⚠️ Nothing to commit"
           git push origin main
