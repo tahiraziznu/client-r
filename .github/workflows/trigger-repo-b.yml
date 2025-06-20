@@ -26,7 +26,9 @@ on:
 
 jobs:
   sync-client-repo:
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+
+
     runs-on: ubuntu-latest
 
     steps:
