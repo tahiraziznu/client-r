@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
     inputs:
         commitMessage:
-          description: 'Custom commit message'
-          required: false
+          description: 'Commit message'
+          required: true
+          default: ''
   push:
     branches:
       - main
@@ -25,7 +26,9 @@ on:
 
 jobs:
   sync-client-repo:
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+
+
     runs-on: ubuntu-latest
 
     steps:
@@ -50,10 +53,10 @@ jobs:
           git config user.email "tahiraziznu@gmail.com"
           git add .
 
-          commit_msg="${{ github.event.inputs.commitMessage }}"
           if [ -z "$commit_msg" ]; then
-            commit_msg=$(git -C .. log -1 --pretty=%B)
+          commit_msg=$(git -C .. log -1 --pretty=%B)
           fi
+
 
           git commit -m "$commit_msg" || echo "⚠️ No changes to commit"
           git push origin main
