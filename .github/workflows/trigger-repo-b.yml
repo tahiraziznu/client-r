@@ -1,6 +1,11 @@
 name: Auto Sync to Client Repo
 
 on:
+  workflow_dispatch:
+    inputs:
+        commitMessage:
+          description: 'Custom commit message'
+          required: false
   push:
     branches:
       - main
@@ -36,24 +41,19 @@ jobs:
         run: |
           echo "🔐 Token starts with: ${CLIENTPAT:0:4}****"
 
-          # Clone client-repo to a subfolder
           git clone https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git client-repo
-          
-          # Remove all existing files in client-repo
           rm -rf client-repo/*
-
-          # Copy everything from team-repo (excluding .git and client-repo folder)
           rsync -av --progress ./ ./client-repo --exclude .git --exclude client-repo
 
           cd client-repo
-
           git config user.name "Tahir Aziz"
           git config user.email "tahiraziznu@gmail.com"
-
           git add .
 
-          # Use latest commit message from team-repo
-          commit_msg=$(git -C .. log -1 --pretty=%B)
-          git commit -m "$commit_msg" || echo "⚠️ No changes to commit"
+          commit_msg="${{ github.event.inputs.commitMessage }}"
+          if [ -z "$commit_msg" ]; then
+            commit_msg=$(git -C .. log -1 --pretty=%B)
+          fi
 
+          git commit -m "$commit_msg" || echo "⚠️ No changes to commit"
           git push origin main
