@@ -33,7 +33,7 @@ jobs:
           cd client-repo
 
           echo "🔁 Adding mosamaatcode/team-r as remote..."
-          git remote add team-r https://github.com/mosamaatcode/team-r.git
+          git remote add team-r https://github.com/mosamaatcodezac/team-r.git
           git fetch team-r
 
           echo "🔀 Merging team-r/main into client-r/main..."
