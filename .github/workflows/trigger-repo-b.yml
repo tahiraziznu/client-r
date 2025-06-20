@@ -5,7 +5,7 @@ on:
     inputs:
         commitMessage:
           description: 'Commit message'
-          required: false
+          required: true
           default: ''
   push:
     branches:
@@ -51,10 +51,10 @@ jobs:
           git config user.email "tahiraziznu@gmail.com"
           git add .
 
-          commit_msg="${{ github.event.inputs.commitMessage }}"
           if [ -z "$commit_msg" ]; then
-            commit_msg=$(git -C .. log -1 --pretty=%B)
+          commit_msg=$(git -C .. log -1 --pretty=%B)
           fi
+
 
           git commit -m "$commit_msg" || echo "⚠️ No changes to commit"
           git push origin main
