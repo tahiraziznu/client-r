@@ -6,7 +6,7 @@ on:
       commitMessage:
         description: 'Commit message'
         required: true
-        default: 'Sync from team repo to client repo'
+        default: 'Sync from team-r to client-r'
 
 jobs:
   safe-sync-to-client:
@@ -14,10 +14,10 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
 
     steps:
-      - name: Checkout Team Repo (team-r)
+      - name: Checkout team-r (this repo)
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # required for git merge to work properly
+          fetch-depth: 0
 
       - name: Setup Git Identity
         run: |
@@ -32,13 +32,13 @@ jobs:
           git clone https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git client-repo
           cd client-repo
 
-          echo "🔁 Adding team-r as a remote..."
-          git remote add team-repo https://github.com/tahiraziznu/team-r.git
-          git fetch team-repo
+          echo "🔁 Adding mosamaatcode/team-r as remote..."
+          git remote add team-r https://github.com/mosamaatcode/team-r.git
+          git fetch team-r
 
           echo "🔀 Merging team-r/main into client-r/main..."
           git checkout main
-          git merge team-repo/main --no-edit || echo "⚠️ Merge completed with conflicts — please resolve manually."
+          git merge team-r/main --no-edit || echo "⚠️ Merge completed with conflicts — please resolve manually."
 
           echo "🧪 Checking for merge conflicts..."
           if git ls-files -u | grep -q .; then
@@ -46,6 +46,6 @@ jobs:
             exit 1
           fi
 
-          echo "✅ Committing and pushing to client-r..."
+          echo "✅ Committing and pushing merged code to client-r..."
           git commit -am "${{ github.event.inputs.commitMessage }}" || echo "⚠️ Nothing to commit"
           git push origin main
