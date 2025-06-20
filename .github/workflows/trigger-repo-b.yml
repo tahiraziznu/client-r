@@ -1,4 +1,4 @@
-name: Auto Sync to Client Repo
+name: Deploy Code to Client Repo
 
 on:
   workflow_dispatch:
@@ -45,8 +45,23 @@ jobs:
           echo "🔐 Token starts with: ${CLIENTPAT:0:4}****"
 
           git clone https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git client-repo
-          rm -rf client-repo/*
-          rsync -av --progress ./ ./client-repo --exclude .git --exclude client-repo
+          
+          rsync -av --progress ./ ./client-repo \
+            --exclude .git \
+            --exclude .github \
+            --exclude client-repo \
+            --include 'src/***' \
+            --include 'public/***' \
+            --include 'components/***' \
+            --include 'utils/***' \
+            --include 'package.json' \
+            --include 'tsconfig.json' \
+            --include 'next.config.js' \
+            --exclude 'public/test-data/***' \
+            --exclude '.env' \
+            --exclude '.vscode/***' \
+            --exclude '*.test.*' \
+            --exclude '*' 
 
           cd client-repo
           git config user.name "Tahir Aziz"
