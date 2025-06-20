@@ -7,27 +7,27 @@ on:
           description: 'Commit message'
           required: true
           default: ''
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'components/**'
-      - 'utils/**'
-      - 'package.json'
-      - 'tsconfig.json'
-      - 'next.config.js'
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'src/**'
+  #     - 'public/**'
+  #     - 'components/**'
+  #     - 'utils/**'
+  #     - 'package.json'
+  #     - 'tsconfig.json'
+  #     - 'next.config.js'
       
-  pull_request:
-    branches:
-      - main
-    types: [closed]
+  # pull_request:
+  #   branches:
+  #     - main
+  #   types: [closed]
 
 jobs:
   sync-client-repo:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-
+    # if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    if: github.event_name == 'workflow_dispatch'
 
     runs-on: ubuntu-latest
 
@@ -70,8 +70,9 @@ jobs:
           git config user.email "tahiraziznu@gmail.com"
           git add .
 
+          commit_msg="${{ github.event.inputs.commitMessage }}"
           if [ -z "$commit_msg" ]; then
-          commit_msg=$(git -C .. log -1 --pretty=%B)
+            commit_msg=$(git -C .. log -1 --pretty=%B)
           fi
 
 
