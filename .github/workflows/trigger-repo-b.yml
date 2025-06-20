@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
     inputs:
         commitMessage:
-          description: 'Custom commit message'
+          description: 'Commit message'
           required: false
+          default: ''
   push:
     branches:
       - main
