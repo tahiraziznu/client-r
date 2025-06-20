@@ -1,80 +1,51 @@
-name: Deploy Code to Client Repo
+name: Deploy Team Code to Client Repo (Safe Merge)
 
 on:
   workflow_dispatch:
     inputs:
-        commitMessage:
-          description: 'Commit message'
-          required: true
-          default: ''
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - 'src/**'
-  #     - 'public/**'
-  #     - 'components/**'
-  #     - 'utils/**'
-  #     - 'package.json'
-  #     - 'tsconfig.json'
-  #     - 'next.config.js'
-      
-  # pull_request:
-  #   branches:
-  #     - main
-  #   types: [closed]
+      commitMessage:
+        description: 'Commit message'
+        required: true
+        default: 'Sync from team repo to client repo'
 
 jobs:
-  sync-client-repo:
-    # if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-    if: github.event_name == 'workflow_dispatch'
-
+  safe-sync-to-client:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout Team Repo
         uses: actions/checkout@v3
         with:
-          persist-credentials: false
-          fetch-depth: 1
+          fetch-depth: 0  # important for full history and merge base
 
-      - name: Clone client-repo and sync files
+      - name: Setup Git Identity
+        run: |
+          git config --global user.name "Tahir Aziz"
+          git config --global user.email "tahiraziznu@gmail.com"
+
+      - name: Clone Client Repo and Merge Team Code
         env:
           CLIENTPAT: ${{ secrets.CLIENTPAT }}
         run: |
-          echo "🔐 Token starts with: ${CLIENTPAT:0:4}****"
-
+          echo "🔐 Cloning client repo..."
           git clone https://x-access-token:${CLIENTPAT}@github.com/tahiraziznu/client-r.git client-repo
-          
-          rsync -av --progress ./ ./client-repo \
-            --exclude .git \
-            --exclude '.github/***' \
-            --exclude 'node_modules/***' \
-            --exclude .github \
-            --exclude client-repo \
-            --include 'src/***' \
-            --include 'public/***' \
-            --include 'components/***' \
-            --include 'utils/***' \
-            --include 'package.json' \
-            --include 'tsconfig.json' \
-            --include 'next.config.js' \
-            --exclude 'public/test-data/***' \
-            --exclude '.env' \
-            --exclude '.vscode/***' \
-            --exclude '*.test.*' \
-            --exclude '*' 
-
           cd client-repo
-          git config user.name "Tahir Aziz"
-          git config user.email "tahiraziznu@gmail.com"
-          git add .
 
-          commit_msg="${{ github.event.inputs.commitMessage }}"
-          if [ -z "$commit_msg" ]; then
-            commit_msg=$(git -C .. log -1 --pretty=%B)
+          echo "🔁 Adding team repo as remote..."
+          git remote add team-repo $GITHUB_SERVER_URL/${{ github.repository }}
+          git fetch team-repo
+
+          echo "🔀 Merging team repo code into client repo..."
+          git checkout main
+          git merge team-repo/main --no-edit || echo "⚠️ Merge completed with conflicts — please resolve manually."
+
+          echo "🧪 Checking for conflicts..."
+          if git ls-files -u | grep -q .; then
+            echo "❌ Merge conflict detected. Please resolve manually in the client repo."
+            exit 1
           fi
 
-
-          git commit -m "$commit_msg" || echo "⚠️ No changes to commit"
+          echo "✅ Pushing merged code to client repo..."
+          git commit -am "${{ github.event.inputs.commitMessage }}" || echo "⚠️ Nothing to commit"
           git push origin main
