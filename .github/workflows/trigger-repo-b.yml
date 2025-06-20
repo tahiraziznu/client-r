@@ -6,7 +6,6 @@ on:
         commitMessage:
           description: 'Custom commit message'
           required: false
-          default: 'Manual sync from team-repo'
   push:
     branches:
       - main
